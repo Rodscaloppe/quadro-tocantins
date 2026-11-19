@@ -100,6 +100,13 @@ section > h2 .cnt { font-family: var(--mono); font-weight: 500; text-transform: 
 .ag .acao { margin-top: 10px; display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; font-size: 13px; }
 .ag .acao .f { font-family: var(--mono); font-size: 11.5px; padding: 1px 7px; border-radius: 5px; background: var(--surf2); color: var(--fg2); white-space: nowrap; }
 .ag .acao .d { color: var(--fg); overflow-wrap: anywhere; }
+.ag .fezl { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ag .fezl .r { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--fg2); font-weight: 700; margin-right: 2px; }
+.ag .fez { font-size: 12.5px; padding: 2px 8px; border-radius: 6px; background: var(--surf2); color: var(--fg2); }
+.ag .fez b { font-family: var(--mono); color: var(--fg); font-weight: 600; } .ag .fez i { font-family: var(--mono); font-style: normal; color: var(--fg3); font-size: 11.5px; }
+.ag .fez.ok { background: var(--ok-soft); color: var(--ok); } .ag .fez.ok b { color: var(--ok); }
+.ag .fez.bad { background: var(--bad-soft); color: var(--bad); } .ag .fez.bad b { color: var(--bad); }
+.ag .antes { margin-top: 4px; padding-left: 10px; font-family: var(--mono); font-size: 12px; color: var(--fg3); overflow-wrap: anywhere; }
 .ag .disse { margin-top: 10px; font-size: 13.5px; color: var(--fg2); border-left: 2px solid var(--line); padding-left: 10px; font-style: italic; overflow-wrap: anywhere; }
 
 /* reprovados e bloqueados */
@@ -245,11 +252,18 @@ section > h2 .cnt { font-family: var(--mono); font-weight: 500; text-transform: 
     var item = a.papel === "product"
       ? '<span class="tit">triagem do backlog' + (a.item ? ' · citou <span class="cod">' + esc(a.item) + '</span>' : '') + '</span>'
       : (a.item ? '<span class="cod">' + esc(a.item) + '</span><span class="tit">' + esc(a.titulo) + '</span>' : '<span class="tit">sem item identificado</span>');
+    var fez = (a.fez || []).map(function (f) {
+      var v = f.veredito || "", cv = (v === "aprovado" || v === "entregue" || v === "liberado") ? "ok" : (v === "reprovado" || v === "bloqueado") ? "bad" : "";
+      return '<span class="fez ' + cv + '"><b>' + esc(f.item) + (f.rodada ? " " + esc(f.rodada) : "") + '</b> ' + esc(v) + (f.hash ? ' <i>' + esc(f.hash) + '</i>' : "") + '</span>';
+    }).join("");
+    var antes = (a.recentes || []).slice(1, 3).map(function (r) { return '<div class="antes">' + esc(r) + '</div>'; }).join("");
     return '<div class="card ag ' + esc(a.papel) + '"><div class="cab"><span class="sinal ' + cls + '"></span><span class="papel">' + esc(a.papel) + '</span>' +
-      '<span class="est">' + est + ' · há ' + Math.round(a.idade_min) + ' min</span></div>' +
+      '<span class="est">' + est + (a.ultima_atividade ? ' · última ' + esc(a.ultima_atividade) : '') + ' (há ' + Math.round(a.idade_min) + ' min)</span></div>' +
       '<div class="item">' + item + '</div>' +
-      (a.containers && a.containers.length ? '<div class="meta">▣ ' + esc(a.containers.join(", ")) + '</div>' : "") +
+      '<div class="meta">' + (a.inicio ? 'começou ' + esc(a.inicio) : '') + (a.n_commits ? ' · ' + a.n_commits + ' commits' : '') + (a.containers && a.containers.length ? ' · ▣ ' + esc(a.containers.join(", ")) : "") + '</div>' +
+      (fez ? '<div class="fezl"><span class="r">fez</span>' + fez + '</div>' : "") +
       (a.acao && a.acao.ferramenta ? '<div class="acao"><span class="f">' + esc(a.acao.ferramenta) + '</span><span class="d">' + esc(a.acao.descricao) + '</span></div>' : "") +
+      antes +
       (a.disse ? '<div class="disse">' + esc(a.disse) + '</div>' : "") + '</div>';
   }).join("") : '<div class="vazio">nenhum agente com atividade recente</div>';
 
